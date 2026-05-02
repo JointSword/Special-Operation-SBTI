@@ -226,6 +226,12 @@
       box-shadow: 0 8px 18px rgba(36, 82, 106, .12);
     }
 
+    .option.selected {
+      border-color: var(--red);
+      background: #f7ead7;
+      box-shadow: 0 0 0 2px rgba(155, 47, 37, .12);
+    }
+
     .option b {
       display: inline-grid;
       place-items: center;
@@ -236,6 +242,44 @@
       background: #e1d1b9;
       font-family: var(--sans);
       font-size: .75rem;
+    }
+
+    .question-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-top: 16px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .nav-btn {
+      border: 1px solid var(--ink);
+      background: transparent;
+      color: var(--ink);
+      border-radius: 999px;
+      padding: 9px 18px;
+      cursor: pointer;
+      font-family: var(--sans);
+      transition: background .18s ease, color .18s ease, opacity .18s ease;
+    }
+
+    .nav-btn:hover:not(:disabled) {
+      background: var(--ink);
+      color: var(--paper);
+    }
+
+    .nav-btn:disabled {
+      cursor: not-allowed;
+      opacity: .38;
+    }
+
+    .nav-hint {
+      color: var(--muted);
+      font-family: var(--sans);
+      font-size: .82rem;
+      text-align: center;
     }
 
     .result-header {
@@ -372,6 +416,9 @@
       .question-card, .result-block, .method { padding: 16px 12px; }
       .result-grid { grid-template-columns: 1fr; }
       .option { padding: 11px 10px; font-size: .92rem; }
+      .question-nav { align-items: stretch; }
+      .nav-btn { padding: 9px 14px; }
+      .nav-hint { display: none; }
     }
   </style>
 </head>
@@ -411,6 +458,11 @@
           <div id="scene" class="scene"></div>
           <p id="question" class="question"></p>
           <div id="options" class="options"></div>
+          <div class="question-nav">
+            <button id="prevBtn" class="nav-btn" type="button">上一题</button>
+            <span id="navHint" class="nav-hint"></span>
+            <button id="nextBtn" class="nav-btn" type="button">下一题</button>
+          </div>
         </div>
       </section>
 
@@ -550,6 +602,7 @@
     };
 
     let current = 0;
+    let answers = Array(questions.length).fill(null);
     let scores = { R: 0, S: 0, C: 0, T: 0, L: 0, H: 0, O: 0, X: 0 };
     let latestResult = "";
 
@@ -561,6 +614,9 @@
     const testPage = document.getElementById("testPage");
     const resultPage = document.getElementById("resultPage");
     const resultContent = document.getElementById("resultContent");
+    const prevBtn = document.getElementById("prevBtn");
+    const nextBtn = document.getElementById("nextBtn");
+    const navHint = document.getElementById("navHint");
 
     function renderQuestion() {
       const q = questions[current];
@@ -571,18 +627,31 @@
       options.innerHTML = "";
       q.options.forEach((item, i) => {
         const btn = document.createElement("button");
-        btn.className = "option";
+        btn.className = `option${answers[current] === item[1] ? " selected" : ""}`;
         btn.innerHTML = `<b>${String.fromCharCode(65 + i)}</b>${item[0]}`;
         btn.addEventListener("click", () => choose(item[1]));
         options.appendChild(btn);
       });
+      prevBtn.disabled = current === 0;
+      nextBtn.disabled = !answers[current];
+      nextBtn.textContent = current === questions.length - 1 ? "看结果" : "下一题";
+      navHint.textContent = answers[current] ? "已选择，可返回修改" : "请选择最接近你的一项";
     }
 
     function choose(axis) {
-      scores[axis] += 1;
-      current += 1;
-      if (current >= questions.length) showResult();
-      else renderQuestion();
+      answers[current] = axis;
+      if (current >= questions.length - 1) showResult();
+      else {
+        current += 1;
+        renderQuestion();
+      }
+    }
+
+    function recalculateScores() {
+      scores = { R: 0, S: 0, C: 0, T: 0, L: 0, H: 0, O: 0, X: 0 };
+      answers.forEach(axis => {
+        if (axis) scores[axis] += 1;
+      });
     }
 
     function winner(a, b) {
@@ -601,6 +670,13 @@
     }
 
     function showResult() {
+      if (answers.some(answer => !answer)) {
+        const firstMissing = answers.findIndex(answer => !answer);
+        current = firstMissing === -1 ? current : firstMissing;
+        renderQuestion();
+        return;
+      }
+      recalculateScores();
       const key = resultKey();
       const b = brands[key];
       latestResult = `${b.name}｜${key}｜${b.tags}｜推荐：${b.kit}`;
@@ -647,11 +723,30 @@
 
     document.getElementById("restartBtn").addEventListener("click", () => {
       current = 0;
+      answers = Array(questions.length).fill(null);
       scores = { R: 0, S: 0, C: 0, T: 0, L: 0, H: 0, O: 0, X: 0 };
       resultPage.classList.add("hidden");
       testPage.classList.remove("hidden");
       renderQuestion();
       window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+
+    prevBtn.addEventListener("click", () => {
+      if (current > 0) {
+        current -= 1;
+        renderQuestion();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+    });
+
+    nextBtn.addEventListener("click", () => {
+      if (!answers[current]) return;
+      if (current >= questions.length - 1) showResult();
+      else {
+        current += 1;
+        renderQuestion();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
     });
 
     document.getElementById("copyBtn").addEventListener("click", async () => {
