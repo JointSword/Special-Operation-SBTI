@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SBTI 摄影人格测评 | 你适合哪家相机</title>
+  <style>
+    :root {
+      --bg: #d8d0c2;
+      --paper: #fbf7ed;
+      --paper-deep: #efe5d2;
+      --ink: #191714;
+      --muted: #675f54;
+      --line: #b9aa91;
+      --red: #9b2f25;
+      --blue: #24526a;
+      --green: #46664a;
+      --yellow: #b9832c;
+      --shadow: 0 22px 60px rgba(34, 28, 20, .16);
+      --radius: 8px;
+      --serif: "Noto Serif SC", "Songti SC", "SimSun", serif;
+      --sans: "LXGW WenKai", "Microsoft YaHei", system-ui, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      font-family: var(--serif);
+      background:
+        linear-gradient(rgba(25, 23, 20, .05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(25, 23, 20, .04) 1px, transparent 1px),
+        radial-gradient(circle at 12% 10%, rgba(185, 131, 44, .22), transparent 25%),
+        radial-gradient(circle at 92% 82%, rgba(36, 82, 106, .18), transparent 30%),
+        var(--bg);
+      background-size: 28px 28px, 28px 28px, auto, auto, auto;
+      padding: 24px 14px;
+      line-height: 1.75;
+    }
+
+    .shell {
+      width: min(920px, 100%);
+      margin: 0 auto;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .shell::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(circle at 30% 20%, rgba(25, 23, 20, .05) 0 1px, transparent 2px),
+        radial-gradient(circle at 80% 60%, rgba(25, 23, 20, .04) 0 1px, transparent 2px);
+      background-size: 17px 19px, 23px 29px;
+      mix-blend-mode: multiply;
+    }
+
+    .top-strip {
+      height: 12px;
+      background: repeating-linear-gradient(
+        90deg,
+        #171512 0 26px,
+        #f2e7d4 26px 34px,
+        #171512 34px 60px
+      );
+    }
+
+    main {
+      position: relative;
+      padding: 34px 34px 38px;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap: 24px;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+
+    .stamp {
+      display: inline-flex;
+      width: fit-content;
+      align-items: center;
+      gap: 8px;
+      border: 2px solid var(--red);
+      color: var(--red);
+      padding: 2px 10px;
+      font-family: var(--sans);
+      font-size: .78rem;
+      letter-spacing: .16em;
+      transform: rotate(-2deg);
+      background: rgba(251, 247, 237, .72);
+    }
+
+    h1 {
+      margin: 12px 0 6px;
+      font-size: clamp(2rem, 6vw, 4.3rem);
+      line-height: 1.05;
+      letter-spacing: .03em;
+      font-weight: 900;
+    }
+
+    .subtitle {
+      margin: 0;
+      max-width: 620px;
+      color: var(--muted);
+      font-size: 1rem;
+    }
+
+    .camera-art {
+      min-height: 230px;
+      border: 1px solid var(--line);
+      background:
+        linear-gradient(135deg, rgba(255, 255, 255, .45), rgba(255, 255, 255, 0)),
+        #eee2cf;
+      position: relative;
+      transform: rotate(1deg);
+      overflow: hidden;
+    }
+
+    .camera-art svg {
+      width: 100%;
+      height: 100%;
+      min-height: 230px;
+      display: block;
+    }
+
+    .scribble {
+      position: absolute;
+      left: 14px;
+      bottom: 10px;
+      font-family: var(--sans);
+      color: var(--muted);
+      font-size: .78rem;
+      letter-spacing: .08em;
+    }
+
+    .progress-wrap { margin: 18px 0 20px; }
+    .progress {
+      height: 7px;
+      border: 1px solid var(--line);
+      background: #e8dcc9;
+      overflow: hidden;
+    }
+    .fill {
+      width: 0;
+      height: 100%;
+      background: linear-gradient(90deg, var(--red), var(--yellow), var(--blue));
+      transition: width .3s ease;
+    }
+    .progress-text {
+      text-align: right;
+      color: var(--muted);
+      font-family: var(--sans);
+      font-size: .78rem;
+      margin-top: 4px;
+    }
+
+    .question-card, .result-block, .method {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(255, 252, 244, .76);
+      padding: 22px;
+      position: relative;
+    }
+
+    .question-card::before, .result-block::before {
+      content: "";
+      position: absolute;
+      inset: 8px;
+      border: 1px dashed rgba(25, 23, 20, .18);
+      pointer-events: none;
+    }
+
+    .scene {
+      color: var(--blue);
+      font-family: var(--sans);
+      font-size: .82rem;
+      letter-spacing: .12em;
+      margin-bottom: 8px;
+    }
+
+    .question {
+      margin: 0 0 18px;
+      padding-left: 14px;
+      border-left: 4px solid var(--yellow);
+      font-size: 1.14rem;
+      font-weight: 700;
+    }
+
+    .options {
+      display: grid;
+      gap: 10px;
+      position: relative;
+      z-index: 1;
+    }
+
+    button {
+      font: inherit;
+    }
+
+    .option {
+      width: 100%;
+      border: 1px solid #cdbda3;
+      background: #fffaf0;
+      color: var(--ink);
+      padding: 13px 14px;
+      text-align: left;
+      border-radius: 7px;
+      cursor: pointer;
+      transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+    }
+
+    .option:hover {
+      transform: translateX(3px);
+      border-color: var(--blue);
+      box-shadow: 0 8px 18px rgba(36, 82, 106, .12);
+    }
+
+    .option b {
+      display: inline-grid;
+      place-items: center;
+      width: 25px;
+      height: 25px;
+      margin-right: 8px;
+      border-radius: 50%;
+      background: #e1d1b9;
+      font-family: var(--sans);
+      font-size: .75rem;
+    }
+
+    .result-header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .brand-mark {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 112px;
+      height: 112px;
+      margin-bottom: 12px;
+      border: 2px solid var(--ink);
+      border-radius: 50%;
+      background: #f7ead4;
+      font-family: var(--sans);
+      font-size: 2.4rem;
+      font-weight: 900;
+      letter-spacing: -.04em;
+      transform: rotate(-3deg);
+    }
+
+    h2 {
+      margin: 0;
+      font-size: clamp(1.7rem, 5vw, 3rem);
+      line-height: 1.15;
+    }
+
+    .tags {
+      color: var(--muted);
+      margin: 6px 0 0;
+      font-family: var(--sans);
+      letter-spacing: .06em;
+    }
+
+    .result-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin: 16px 0;
+    }
+
+    .mini {
+      background: var(--paper-deep);
+      border: 1px solid rgba(25, 23, 20, .15);
+      padding: 12px;
+      border-radius: 7px;
+    }
+
+    .mini h3, .method h3 {
+      margin: 0 0 7px;
+      color: var(--blue);
+      font-family: var(--sans);
+      font-size: .9rem;
+      letter-spacing: .08em;
+    }
+
+    .mini p { margin: 0; font-size: .92rem; }
+
+    .bars {
+      display: grid;
+      gap: 10px;
+    }
+
+    .bar-row {
+      background: #eee3d1;
+      padding: 10px 12px;
+      border-radius: 7px;
+      font-family: var(--sans);
+      font-size: .82rem;
+    }
+
+    .bar-title {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 6px;
+      color: var(--muted);
+    }
+
+    .track {
+      height: 5px;
+      background: rgba(25, 23, 20, .14);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .track span {
+      display: block;
+      height: 100%;
+      border-radius: 999px;
+      background: var(--red);
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .action {
+      border: 1px solid var(--ink);
+      background: var(--ink);
+      color: var(--paper);
+      border-radius: 999px;
+      padding: 10px 22px;
+      cursor: pointer;
+      font-family: var(--sans);
+    }
+
+    .action.secondary {
+      background: transparent;
+      color: var(--ink);
+    }
+
+    .method {
+      margin-top: 24px;
+      color: var(--muted);
+      font-size: .88rem;
+    }
+
+    .hidden { display: none; }
+
+    @media (max-width: 720px) {
+      body { padding: 10px 8px; }
+      main { padding: 22px 14px 24px; }
+      .hero { grid-template-columns: 1fr; gap: 14px; }
+      .camera-art { min-height: 170px; }
+      .camera-art svg { min-height: 170px; }
+      .question-card, .result-block, .method { padding: 16px 12px; }
+      .result-grid { grid-template-columns: 1fr; }
+      .option { padding: 11px 10px; font-size: .92rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <div class="top-strip"></div>
+    <main>
+      <section class="hero">
+        <div>
+          <div class="stamp">SBTI · SHUTTER BRAND TYPE INDICATOR</div>
+          <h1>摄影品牌人格测评</h1>
+          <p class="subtitle">二十道题，测你更适合哪一家相机。结果不负责阻止你剁手，只负责把你的拍摄癖好照出来。</p>
+        </div>
+        <div class="camera-art" aria-hidden="true">
+          <svg viewBox="0 0 420 260" role="img">
+            <rect x="32" y="78" width="326" height="126" rx="15" fill="#f8eedb" stroke="#171512" stroke-width="4"/>
+            <path d="M70 78 L100 42 L178 42 L204 78" fill="#f8eedb" stroke="#171512" stroke-width="4"/>
+            <circle cx="217" cy="142" r="67" fill="#f1dcc0" stroke="#171512" stroke-width="4"/>
+            <circle cx="217" cy="142" r="45" fill="#23333a" stroke="#171512" stroke-width="4"/>
+            <circle cx="203" cy="127" r="13" fill="#fbf7ed"/>
+            <path d="M252 166 C229 188 190 185 174 155" fill="none" stroke="#fbf7ed" stroke-width="5" stroke-linecap="round"/>
+            <rect x="278" y="95" width="42" height="20" rx="4" fill="#9b2f25" stroke="#171512" stroke-width="3"/>
+            <path d="M38 222 C98 199 145 239 199 218 C250 198 292 224 362 207" fill="none" stroke="#24526a" stroke-width="3" stroke-linecap="round"/>
+            <path d="M63 36 C95 19 132 20 166 33" fill="none" stroke="#9b2f25" stroke-width="3" stroke-linecap="round"/>
+            <path d="M317 54 C351 42 376 47 399 68" fill="none" stroke="#46664a" stroke-width="3" stroke-linecap="round"/>
+          </svg>
+          <div class="scribble">contact sheet / field note / shutter bias</div>
+        </div>
+      </section>
+
+      <section id="testPage">
+        <div class="progress-wrap">
+          <div class="progress"><div id="fill" class="fill"></div></div>
+          <div id="progressText" class="progress-text"></div>
+        </div>
+        <div class="question-card">
+          <div id="scene" class="scene"></div>
+          <p id="question" class="question"></p>
+          <div id="options" class="options"></div>
+        </div>
+      </section>
+
+      <section id="resultPage" class="hidden">
+        <div id="resultContent" class="result-block"></div>
+        <div class="actions">
+          <button class="action" id="restartBtn">重新测一次</button>
+          <button class="action secondary" id="copyBtn">复制结果</button>
+        </div>
+      </section>
+
+      <section class="method">
+        <h3>测评说明</h3>
+        <p>本测试不是严肃心理量表，而是把摄影偏好拆成四组倾向：街头反应 / 棚内控制、色彩气质 / 技术性能、轻装游走 / 重装系统、稳定秩序 / 野路实验。四组倾向组合为 16 种 SBTI 类型，并映射到 16 个相机品牌。</p>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const questions = [
+      { scene: "01 / 清晨街口", text: "你看到一束光正好落在路人脸上，第一反应是？", options: [
+        ["举起来先拍，构图可以边走边修正。", "R"], ["先等人、光、背景都站到舒服的位置。", "S"], ["先想这束光会不会有电影感颜色。", "C"], ["先确认曝光和快门，别让这一瞬间糊掉。", "T"]
+      ]},
+      { scene: "02 / 新机发布", text: "最容易让你心动的卖点是？", options: [
+        ["直出的颜色、胶片模拟、照片一眼有情绪。", "C"], ["对焦、宽容度、视频规格、镜头解析力。", "T"], ["机身足够小，可以每天随身带。", "L"], ["完整系统和专业附件一口气铺开。", "H"]
+      ]},
+      { scene: "03 / 出门前", text: "你更愿意带哪套设备？", options: [
+        ["一机一镜，能挂脖子一整天。", "L"], ["机身、三支镜头、脚架、滤镜，一个都不能少。", "H"], ["按今天路线配一套明确组合，不带多余变量。", "O"], ["看心情抓一台怪机器就出门。", "X"]
+      ]},
+      { scene: "04 / 修片桌", text: "你对后期的态度更接近？", options: [
+        ["有固定流程和色彩基准，文件要规整归档。", "O"], ["今天仿报纸，明天仿宝丽来，越折腾越开心。", "X"], ["尽量保留现场呼吸感，不要磨掉瞬间。", "R"], ["慢慢校正每个局部，让画面站稳。", "S"]
+      ]},
+      { scene: "05 / 纪实项目", text: "你会如何开始一个拍摄计划？", options: [
+        ["先去现场混熟，故事会自己浮出来。", "R"], ["先列主题、场景、人物关系和镜头清单。", "S"], ["先定一套统一色彩，让系列有记忆点。", "C"], ["先查设备、备份、供电和交付规格。", "T"]
+      ]},
+      { scene: "06 / 看样片", text: "你最在意照片的第一印象是？", options: [
+        ["味道对不对，像不像一段能被记住的天气。", "C"], ["细节扎不扎实，暗部能不能拉，边角崩不崩。", "T"], ["是不是有一种当场撞见的真实感。", "R"], ["构图、光线和人物位置是否完整。", "S"]
+      ]},
+      { scene: "07 / 旅行", text: "同伴问你为什么不多带点器材，你会说？", options: [
+        ["我想把相机当笔记本，不想当健身器材。", "L"], ["错过焦段比背包重更让我痛苦。", "H"], ["路线随缘，设备也要随缘。", "X"], ["我按当天路线配器材，不想带多余变量。", "O"]
+      ]},
+      { scene: "08 / 拍摄风格", text: "你的作品集更可能长成什么样？", options: [
+        ["统一、克制、能看出长期训练的审美。", "O"], ["像一桌胶片实验，有些失败但每张都不太一样。", "X"], ["色彩贯穿始终，像一本私人画册。", "C"], ["技术标准统一，放大看也很稳。", "T"]
+      ]},
+      { scene: "09 / 婚礼现场", text: "现场忽然出现一个意外拥抱，你会？", options: [
+        ["马上贴过去抓表情，别让故事跑了。", "R"], ["保持位置，把环境、层次和人物关系拍完整。", "S"], ["确认双卡、快门和追焦状态。", "T"], ["用最轻的一套设备在人群里穿过去。", "L"]
+      ]},
+      { scene: "10 / 品牌广告", text: "一句广告语最能打动你的是？", options: [
+        ["把日常拍成有温度的电影剧照。", "C"], ["下一代堆栈传感器，全域追焦，8K 内录。", "T"], ["小到没有借口不带出门。", "L"], ["从机身到镜头到片场附件全都有。", "H"]
+      ]},
+      { scene: "11 / 长途拍摄", text: "你最怕的事情是？", options: [
+        ["相机太重，最后懒得拿出来。", "L"], ["设备不够，关键场面没有可用画质。", "H"], ["计划崩掉，素材回来看不成系列。", "O"], ["每天都拍得太规矩，没有一点意外收获。", "X"]
+      ]},
+      { scene: "12 / 器材论坛", text: "你更像哪种帖子作者？", options: [
+        ["严谨评测，样张、参数、结论分区清楚。", "O"], ["冷门转接、魔改镜头、奇怪厂商实拍报告。", "X"], ["街头实拍，讲遇到的人和现场。", "R"], ["棚内控制变量，慢慢比较差别。", "S"]
+      ]},
+      { scene: "13 / 人像拍摄", text: "你更擅长的状态是？", options: [
+        ["聊天、散步、把对方带进真实情绪。", "R"], ["布光、姿态、服装和背景全部压到位。", "S"], ["肤色、氛围和整体调性要先成立。", "C"], ["用稳定对焦和连拍把表情成功率拉满。", "T"]
+      ]},
+      { scene: "14 / 收藏照片", text: "你会反复回看的照片多半是？", options: [
+        ["色彩和氛围很有记忆点，哪怕不完美。", "C"], ["技术完成度高，放大看也让人服气。", "T"], ["发生得很突然，有一种生活刺点。", "R"], ["像被精心搭建过，每个元素都有位置。", "S"]
+      ]},
+      { scene: "15 / 镜头选择", text: "只能留一支镜头，你更可能留下？", options: [
+        ["28/35mm，贴近日常，随手就能拍。", "L"], ["变焦或中长焦，覆盖更多任务和画面压缩。", "H"], ["选一个和我色彩审美最搭的镜头。", "C"], ["选解析、对焦、呼吸控制最强的镜头。", "T"]
+      ]},
+      { scene: "16 / 创作瓶颈", text: "你会怎样破局？", options: [
+        ["做一个固定主题，连续拍三十天。", "O"], ["买个怪镜头或换个完全陌生的拍法。", "X"], ["去陌生街区走一下午，让画面自己出现。", "R"], ["搭一套可控场景，重新训练基本功。", "S"]
+      ]},
+      { scene: "17 / 暗房想象", text: "你更喜欢哪种摄影神话？", options: [
+        ["玛格南式上街，照片从生活缝隙里跳出来。", "R"], ["大画幅、影棚、灯光，像雕刻一样慢慢造图。", "S"], ["经典胶片色彩和纸基相纸的温度。", "C"], ["极限画质、精密流程和工业级交付。", "T"]
+      ]},
+      { scene: "18 / 机身菜单", text: "你希望相机更像？", options: [
+        ["有个性的小酒馆，菜单不多但每道有味。", "C"], ["高性能工作站，选项多但都能精确控制。", "T"], ["口袋里的速写本，掏出来就拍。", "L"], ["片场主控台，所有接口都能扩展。", "H"]
+      ]},
+      { scene: "19 / 预算分配", text: "你更愿意把钱花在？", options: [
+        ["常带出门的轻便机身和一支舒服镜头。", "L"], ["完整系统、灯具、附件和后续扩展。", "H"], ["长期稳定的主力套装，少折腾。", "O"], ["冷门机、怪镜头和意想不到的小配件。", "X"]
+      ]},
+      { scene: "20 / 作品发布", text: "你更想让别人怎么评价你？", options: [
+        ["这组作品稳定、专业、完成度高。", "O"], ["这个人真会玩，完全不知道下一组会拍什么。", "X"], ["这组照片像一段真实经历，不像摆拍。", "R"], ["这组照片控制力很强，画面很完整。", "S"]
+      ]},
+      { scene: "21 / 雨夜路口", text: "霓虹、雨伞、车灯同时出现，你会先想什么？", options: [
+        ["冲进人行道，抓住最乱也最真的一秒。", "R"], ["找遮挡和反光，把层次慢慢搭出来。", "S"], ["雨夜色彩太好了，直出味道要保住。", "C"], ["高感、快门和防抖能不能稳住画面。", "T"]
+      ]},
+      { scene: "22 / 二手交易", text: "你最容易为哪种描述下单？", options: [
+        ["轻便成色好，随手带出门无压力。", "L"], ["旗舰规格，镜头群齐，未来可扩展。", "H"], ["保养记录完整，快门数清楚，配件盒票齐全。", "O"], ["小众稀有，论坛里都没几篇完整评测。", "X"]
+      ]},
+      { scene: "23 / 拍摄对象", text: "你最想长期拍的主题是？", options: [
+        ["街角、朋友、家庭、突发的小剧情。", "R"], ["肖像、静物、建筑、可以反复打磨的主体。", "S"], ["季节、色块、光影和情绪气候。", "C"], ["运动、舞台、商业任务和复杂现场。", "T"]
+      ]},
+      { scene: "24 / 收工之后", text: "一次拍完回来，你通常会先做什么？", options: [
+        ["马上备份、命名、打星、筛选。", "O"], ["先随便挑几张玩，灵感来了再整理。", "X"], ["先挑出现场感最强的瞬间。", "R"], ["先检查关键画面是否达到交付标准。", "T"]
+      ]},
+      { scene: "25 / 相机外观", text: "你喜欢什么样的机身气质？", options: [
+        ["小、低调、像日常物件。", "L"], ["大、专业、握上去就知道能干活。", "H"], ["复古、温润、最好自带一点胶片气。", "C"], ["冷静、功能化、按钮和接口都明确。", "T"]
+      ]},
+      { scene: "26 / 朋友约拍", text: "朋友说想拍一组“不像证件照”的头像，你会？", options: [
+        ["带他边走边聊，抓自然表情。", "R"], ["约一个具体场地，把光位和姿态设计好。", "S"], ["先选一套适合他气质的色调。", "C"], ["先确认镜头、灯和输出尺寸。", "T"]
+      ]},
+      { scene: "27 / 影像偶像", text: "你更佩服哪种摄影师？", options: [
+        ["总能在混乱现场预判决定性瞬间的人。", "R"], ["能把光线、造型、背景全部掌控的人。", "S"], ["作品一看就有独特色彩签名的人。", "C"], ["技术极强，任何任务都能稳定完成的人。", "T"]
+      ]},
+      { scene: "28 / 搬家时", text: "你整理器材柜时最可能发现？", options: [
+        ["真正常用的其实只有一台小相机。", "L"], ["很多配件当时没用，但关键时刻真救命。", "H"], ["每件东西都有编号和固定位置。", "O"], ["一堆来历神秘但舍不得卖的玩具。", "X"]
+      ]},
+      { scene: "29 / 拍摄失败", text: "一组片子没拍好，你最可能归因于？", options: [
+        ["当时离现场还不够近，没进入事件。", "R"], ["前期控制不足，光线和场景没搭好。", "S"], ["情绪和颜色没统一，照片没有记忆点。", "C"], ["设备设置和技术指标没有压稳。", "T"]
+      ]},
+      { scene: "30 / 下一台相机", text: "你心里的终极理由是？", options: [
+        ["它会让我更愿意出门。", "L"], ["它能把整个系统补完整。", "H"], ["它能让我形成更稳定的长期风格。", "O"], ["它够怪，能把我从惯性里拽出来。", "X"]
+      ]}
+    ];
+
+    const brands = {
+      RCLO: { name: "Fujifilm 富士", mark: "Fuji", tags: "街头色彩 / 轻装日记 / 稳定胶片模拟", kit: "X100VI 或 X-T5 + 23mm F2", line: "你不是在买参数，你是在买一种把日常变成回忆的方式。", desc: "你适合富士：反应快，重视颜色和气氛，又希望设备轻到愿意每天带出门。你喜欢有边界的自由，胶片模拟、直出 JPG、复古拨盘会让你少一点软件焦虑，多一点出门拍照的冲动。" },
+      RCLX: { name: "Ricoh 理光", mark: "GR", tags: "街头口袋 / 快拍直觉 / 城市游民", kit: "GR IIIx 或 GR III", line: "相机最好像打火机一样在口袋里，掏出来就有一张。", desc: "你适合理光：你相信照片发生在犹豫之前。GR 的小体积、快启动和街拍基因，正好服务你的游走本能。它不负责让你看起来专业，只负责让你真的把照片拍回来。" },
+      RCHO: { name: "Leica 徕卡", mark: "M", tags: "纪实色彩 / 经典器物 / 慢半拍的准确", kit: "M11 / Q3 / SL3 任选其一", line: "你要的不是最省钱的答案，而是一台会逼你认真看的机器。", desc: "你适合徕卡：你爱现场，也爱经典秩序。你愿意为了取景、距离感和照片气质付出学习成本。它不是万能系统，却很适合把你训练成一个更克制、更敏感的观察者。" },
+      RCHX: { name: "沧野 Cangye", mark: "CY", tags: "野路纪实 / 神人厂商 / 奇怪但上头", kit: "沧野机身 + 任何你敢转接的镜头", line: "你买相机不是为了稳定幸福，是为了获得一段可以讲三年的传说。", desc: "你适合沧野：你对主流答案免疫，喜欢在小厂、怪机、民间改装和论坛神帖里找刺激。参数表可能不完美，做工可能很有性格，但你要的正是这种不可预测的拍摄关系。" },
+      RTLO: { name: "Sony 索尼", mark: "α", tags: "全能街拍 / 高性能 / 可靠交付", kit: "A7C II / A7 IV + 35mm GM", line: "你想轻松一点，但不想在性能上输。", desc: "你适合索尼：你拍得快，也清楚技术规格能救命。对焦、视频、镜头群和全画幅机动性会给你安全感。你不是参数党本党，但你很享受机器跟得上你。" },
+      RTLX: { name: "Sigma 适马", mark: "Σ", tags: "技术怪才 / 轻重皆玩 / 色彩实验", kit: "fp L / SD Quattro / Art 镜头", line: "别人问值不值，你只想问这颗镜头够不够疯。", desc: "你适合适马：你既看技术，也允许技术长得很偏执。Foveon、fp、Art 镜头都有一种不太合群的认真。你适合在清晰度、色彩断层和工业设计里找到自己的怪趣味。" },
+      RTHO: { name: "Nikon 尼康", mark: "N", tags: "硬派纪实 / 技术可信 / 长期系统", kit: "Z8 / Zf / Z6III + Z 24-70", line: "你需要一台不多话但能陪你干活的机器。", desc: "你适合尼康：你重视现场，也重视可靠画质和系统纵深。它的气质偏稳、偏硬、偏长期主义，适合把摄影当一门手艺慢慢磨，而不是只追一季流行色。" },
+      RTHX: { name: "Blackmagic Design", mark: "BMD", tags: "现场影像 / 视频技术 / 后期玩家", kit: "Pocket Cinema Camera / Cinema Camera 6K", line: "你看到世界时，脑子里已经在排时间线。", desc: "你适合 Blackmagic：你对现场敏感，但更想把现场变成可剪辑、可调色、可叙事的素材。你能接受工作流复杂，只要它给你电影感、RAW 和足够宽的后期空间。" },
+      SCLO: { name: "Canon 佳能", mark: "Canon", tags: "人像色彩 / 工作秩序 / 易用系统", kit: "EOS R6 Mark II / R5 + RF 50mm", line: "你想让照片温和、稳妥、客户和朋友都喜欢。", desc: "你适合佳能：你重视人物、肤色和完整流程。佳能的优势不在炫技，而在让复杂拍摄变得顺手。它适合人像、活动、家庭和商业交付，也适合不想天天跟菜单吵架的人。" },
+      SCLX: { name: "OM System 奥之心", mark: "OM", tags: "小系统 / 自然观察 / 轻装冒险", kit: "OM-1 Mark II + 12-40mm Pro", line: "别人还在换镜头，你已经走到下一座山后面了。", desc: "你适合 OM System：你想认真拍，但不想被重量拴住。防抖、防护、长焦等效优势和小体积会让你在旅行、生态、雨天和山路里更自由。" },
+      SCHO: { name: "Hasselblad 哈苏", mark: "H", tags: "中画幅色彩 / 棚拍控制 / 冷静审美", kit: "X2D 100C + XCD 55V", line: "你不急着按快门，你在等画面变得配得上快门。", desc: "你适合哈苏：你偏爱可控场景、细腻层次和安静的高级感。你不会满足于热闹，你更想把光线、色彩和材质压成一张可以长久凝视的图。" },
+      SCHX: { name: "Pentax 宾得", mark: "P", tags: "慢拍固执 / 单反信仰 / 冷门浪漫", kit: "K-1 Mark II / K-3 III Monochrome", line: "你不赶潮流，你等潮流从你身边绕过去。", desc: "你适合宾得：你喜欢可控拍摄，也喜欢保留一点反时代的脾气。光学取景器、机身防抖、三防和独特色彩会让你觉得摄影仍然是一件有重量的事情。" },
+      STLO: { name: "Panasonic Lumix", mark: "LUMIX", tags: "影像工作流 / 稳定视频 / 理性轻装", kit: "S5IIX / GH7 + 20-60mm", line: "你希望机器少耍性格，多把活干完。", desc: "你适合松下 Lumix：你在画质、视频、稳定性和预算之间很会算账。它不总是最会营销，但工作流扎实，尤其适合照片视频都要、又希望系统理性的人。" },
+      STLX: { name: "DJI 大疆", mark: "DJI", tags: "运动影像 / 技术玩具 / 空间实验", kit: "Osmo Pocket 3 / Action 5 Pro / Mavic 系列", line: "你不满足于站在地上拍，你想让镜头动起来。", desc: "你适合大疆：你对技术敏感，又喜欢轻装和新角度。稳定器、无人机、口袋相机和运动相机会把你的摄影扩展成空间调度与运动叙事。" },
+      STHO: { name: "Phase One 飞思", mark: "P1", tags: "顶级商业 / 中画幅系统 / 绝对控制", kit: "XT / XF IQ4 系统", line: "你追求的不是够用，是文件打开那一刻的压倒性。", desc: "你适合飞思：你需要极致画质、商业棚拍和完整技术控制。它昂贵、沉重、专业门槛高，但如果你追求大尺幅输出、广告质感和严肃工作流，它就是很直白的答案。" },
+      STHX: { name: "RED", mark: "RED", tags: "电影工业 / 重装规格 / 片场野心", kit: "KOMODO-X / V-RAPTOR", line: "你不是想拍一段视频，你想把世界按电影工业规格采集下来。", desc: "你适合 RED：你关心动态范围、RAW、码率、监看和片场扩展。它不是日常相机，而是把你的创作欲望推向团队化、工业化和高规格影像生产的工具。" }
+    };
+
+    const axisNames = {
+      R: "街头反应", S: "棚内控制",
+      C: "色彩气质", T: "技术性能",
+      L: "轻装游走", H: "重装系统",
+      O: "稳定秩序", X: "野路实验"
+    };
+
+    let current = 0;
+    let scores = { R: 0, S: 0, C: 0, T: 0, L: 0, H: 0, O: 0, X: 0 };
+    let latestResult = "";
+
+    const fill = document.getElementById("fill");
+    const progressText = document.getElementById("progressText");
+    const scene = document.getElementById("scene");
+    const question = document.getElementById("question");
+    const options = document.getElementById("options");
+    const testPage = document.getElementById("testPage");
+    const resultPage = document.getElementById("resultPage");
+    const resultContent = document.getElementById("resultContent");
+
+    function renderQuestion() {
+      const q = questions[current];
+      fill.style.width = `${(current / questions.length) * 100}%`;
+      progressText.textContent = `${current + 1} / ${questions.length}`;
+      scene.textContent = q.scene;
+      question.textContent = q.text;
+      options.innerHTML = "";
+      q.options.forEach((item, i) => {
+        const btn = document.createElement("button");
+        btn.className = "option";
+        btn.innerHTML = `<b>${String.fromCharCode(65 + i)}</b>${item[0]}`;
+        btn.addEventListener("click", () => choose(item[1]));
+        options.appendChild(btn);
+      });
+    }
+
+    function choose(axis) {
+      scores[axis] += 1;
+      current += 1;
+      if (current >= questions.length) showResult();
+      else renderQuestion();
+    }
+
+    function winner(a, b) {
+      if (scores[a] === scores[b]) return a;
+      return scores[a] > scores[b] ? a : b;
+    }
+
+    function resultKey() {
+      return winner("R", "S") + winner("C", "T") + winner("L", "H") + winner("O", "X");
+    }
+
+    function bar(a, b, label) {
+      const total = Math.max(scores[a] + scores[b], 1);
+      const pct = Math.round(scores[a] / total * 100);
+      return `<div class="bar-row"><div class="bar-title"><span>${label}</span><span>${axisNames[a]} ${scores[a]} / ${axisNames[b]} ${scores[b]}</span></div><div class="track"><span style="width:${pct}%"></span></div></div>`;
+    }
+
+    function showResult() {
+      const key = resultKey();
+      const b = brands[key];
+      latestResult = `${b.name}｜${key}｜${b.tags}｜推荐：${b.kit}`;
+      fill.style.width = "100%";
+      testPage.classList.add("hidden");
+      resultPage.classList.remove("hidden");
+      resultContent.innerHTML = `
+        <div class="result-header">
+          <div class="brand-mark">${b.mark}</div>
+          <h2>${b.name}</h2>
+          <p class="tags">${key} · ${b.tags}</p>
+        </div>
+        <div class="result-grid">
+          <div class="mini"><h3>判定短句</h3><p>${b.line}</p></div>
+          <div class="mini"><h3>建议套装</h3><p>${b.kit}</p></div>
+        </div>
+        <div class="mini"><h3>品牌评语</h3><p>${b.desc}</p></div>
+        <div class="result-grid">
+          <div class="mini"><h3>适合题材</h3><p>${topicText(key)}</p></div>
+          <div class="mini"><h3>购买提醒</h3><p>${warningText(key)}</p></div>
+        </div>
+        <div class="bars">
+          ${bar("R", "S", "取景方式")}
+          ${bar("C", "T", "画面信仰")}
+          ${bar("L", "H", "器材负担")}
+          ${bar("O", "X", "创作秩序")}
+        </div>
+      `;
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function topicText(key) {
+      const first = key[0] === "R" ? "街头、旅行、婚礼抓拍、家庭纪实" : "棚拍、人像、商业、风光与静物";
+      const second = key[1] === "C" ? "，尤其适合有明确色彩和情绪的系列" : "，尤其适合需要高成功率和后期空间的任务";
+      return first + second + "。";
+    }
+
+    function warningText(key) {
+      if (key.includes("X")) return "你很容易被冷门器材和新鲜玩法吸走预算。买之前先确认维修、附件和二手流通。";
+      if (key.includes("H")) return "系统越完整，越要警惕重量和闲置率。别让器材柜替你完成摄影。";
+      if (key.includes("L")) return "轻便是优势，但别把轻便当成逃避学习布光、焦段和项目能力的理由。";
+      return "你的选择很稳，但也要偶尔打破惯性，否则作品会比器材更早进入舒适区。";
+    }
+
+    document.getElementById("restartBtn").addEventListener("click", () => {
+      current = 0;
+      scores = { R: 0, S: 0, C: 0, T: 0, L: 0, H: 0, O: 0, X: 0 };
+      resultPage.classList.add("hidden");
+      testPage.classList.remove("hidden");
+      renderQuestion();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+
+    document.getElementById("copyBtn").addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(`我的 SBTI 摄影品牌人格：${latestResult}`);
+      } catch (e) {
+        alert(latestResult);
+      }
+    });
+
+    renderQuestion();
+  </script>
+</body>
+</html>
